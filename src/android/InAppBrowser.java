@@ -758,7 +758,7 @@ public class InAppBrowser extends CordovaPlugin {
                 _close.setId(Integer.valueOf(id));
                 _close.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View v) {
-                        closeDialog();
+                        dialog.hide();
                     }
                 });
 

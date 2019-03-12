@@ -507,6 +507,18 @@ public class InAppBrowser extends CordovaPlugin {
             this.cordova.getActivity().startActivity(chooser);
         }
     }
+    
+    /**
+     * Hide the dialog
+     */
+    public void hideDialog() {
+        this.cordova.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    dialog.hide();
+                }
+            });
+    }
 
     /**
      * Closes the dialog

@@ -601,12 +601,6 @@ public class InAppBrowser extends CordovaPlugin {
     private void navigate(String url) {
         InputMethodManager imm = (InputMethodManager)this.cordova.getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(edittext.getWindowToken(), 0);
-
-        if (url.startsWith("intent:")) {
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse(url));
-            url = intent.getStringExtra("browser_fallback_url");
-        }
         if (!url.startsWith("http") && !url.startsWith("file:")) {
             this.inAppWebView.loadUrl("http://" + url);
         } else {
@@ -1243,12 +1237,31 @@ public class InAppBrowser extends CordovaPlugin {
                 } catch (android.content.ActivityNotFoundException e) {
                     LOG.e(LOG_TAG, "Error dialing " + url + ": " + e.toString());
                 }
-            } else if (url.startsWith("geo:") || url.startsWith(WebView.SCHEME_MAILTO) || url.startsWith("market:")  || url.startsWith("intent:")) { //
+            }
+            else if (url.startsWith("intent:")) {
+                String fallbackUrl = getFallBackUrl(url);
+                if (fallbackUrl != null && fallbackUrl != "") {
+                    inAppWebView.loadUrl(url);
+                } else {
+                    try {
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        intent.setData(Uri.parse(url));
+                        cordova.getActivity().startActivity(intent);
+                        override = true;
+  
+                  } catch (android.content.ActivityNotFoundException e) {
+                      LOG.e(LOG_TAG, "Error with " + url + ": " + e.toString());
+                  }
+                }
+
+            }
+             else if (url.startsWith("geo:") || url.startsWith(WebView.SCHEME_MAILTO) || url.startsWith("market:")) { //
                 try {
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse(url));
-                    cordova.getActivity().startActivity(intent);
-                    override = true;
+                      Intent intent = new Intent(Intent.ACTION_VIEW);
+                      intent.setData(Uri.parse(url));
+                      cordova.getActivity().startActivity(intent);
+                      override = true;
+
                 } catch (android.content.ActivityNotFoundException e) {
                     LOG.e(LOG_TAG, "Error with " + url + ": " + e.toString());
                 }
@@ -1399,6 +1412,16 @@ public class InAppBrowser extends CordovaPlugin {
             }
         }
 
+        private String getFallBackUrl(String url) {
+          String[] splittedUrl = url.split(";");
+          String fallbackUrl = url;
+          for (int i = 0; i < splittedUrl.length; i++) {
+           if (splittedUrl[i].indexOf("S.browser_fallback_url=") != -1) {
+             fallbackUrl = splittedUrl[i].replace("S.browser_fallback_url=", "");
+           }
+          }
+           return fallbackUrl;
+        }
 
 
         public void onPageFinished(WebView view, String url) {

@@ -1241,7 +1241,7 @@ public class InAppBrowser extends CordovaPlugin {
             else if (url.startsWith("intent:")) {
                 String fallbackUrl = getFallBackUrl(url);
                 if (fallbackUrl != null && fallbackUrl != "") {
-                    inAppWebView.loadUrl(url);
+                    inAppWebView.loadUrl(fallbackUrl);
                 } else {
                     try {
                         Intent intent = new Intent(Intent.ACTION_VIEW);
